@@ -1,9 +1,23 @@
-FROM debian:latest
+FROM debian:bookworm-slim
 
-RUN apt update && apt upgrade -y
-RUN apt install git curl python3-pip ffmpeg -y
+# Install system dependencies in a single layer and clean up cache
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    curl \
+    python3-pip \
+    ffmpeg \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Upgrade pip
 RUN pip3 install -U pip
-COPY . /app
+
+# Set working directory and copy application code
 WORKDIR /app
+COPY . .
+
+# Install Python dependencies
 RUN pip3 install -U -r requirements.txt
-CMD python3 -m SpamX
+
+# Run the application
+CMD ["python3", "-m", "SpamX"]
